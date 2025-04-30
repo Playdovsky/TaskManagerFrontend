@@ -12,5 +12,14 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5070',
+        // eslint-disable-next-line no-useless-escape
+        rewrite: (path) => path.replace(/^\api/, '') // Wyłączyłem tutaj błąd "eslint useless escape" bo działa poprawnie a eslint ją źle interpretuje
+      }
+    }
   }
 })

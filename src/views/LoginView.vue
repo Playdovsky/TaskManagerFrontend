@@ -6,6 +6,7 @@ interface PageData {
   username: string
   password: string
   loginDataStore: ReturnType<typeof useLoginPageDataStore>
+  loginFailed: false
 }
 
 export default defineComponent({
@@ -13,7 +14,8 @@ export default defineComponent({
     return {
       username: '',
       password: '',
-      loginDataStore: useLoginPageDataStore()
+      loginDataStore: useLoginPageDataStore(),
+      loginFailed: false
     }
   },
   watch: {
@@ -31,6 +33,27 @@ export default defineComponent({
     },
     clearData() {
       this.loginDataStore.clearData()
+    },
+    async postPageData() {
+      this.loginFailed = false
+
+      const response = await fetch('/api/Auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          Username: this.username,
+          Password: this.password
+        })
+      })
+
+      if (!response.ok) {
+        this.loginFailed = true
+        return
+      }
+
+      this.$router.push('/')
     }
   },
   mounted() {
@@ -44,14 +67,35 @@ export default defineComponent({
 })
 </script>
 <style></style>
+
 <template>
-  <div class="container">
-    <div class="form">
-      <input v-model="username" type="text" class="form-control m-3" />
-      <input v-model="password" type="text" class="form-control m-3" />
-    </div>
-    <div class="float-end">
-      <button class="btn btn-primary">Prześlij</button>
-    </div>
+  <div class="d-flex justify-content-center align-items-center mt-5">
+    <form
+      class="w-100 card shadow-lg border-0"
+      style="max-width: 500px; padding: 2rem"
+      @submit.prevent="postPageData"
+    >
+      <div class="mb-3">
+        <label for="usernameLogin" class="form-label">Nazwa użytkownika</label>
+        <input v-model="username" type="text" id="usernameLogin" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="passwordLogin" class="form-label">Hasło</label>
+        <input
+          v-model="password"
+          type="password"
+          id="passwordLogin"
+          class="form-control"
+          required
+        />
+      </div>
+      <p v-if="loginFailed" class="alert alert-danger" role="alert">Błędne dane logowania</p>
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary w-100">Zaloguj się</button>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <RouterLink to="/register">Nie masz jeszcze konta? Zarejestruj się</RouterLink>
+      </div>
+    </form>
   </div>
 </template>
