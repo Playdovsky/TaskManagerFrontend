@@ -2,6 +2,7 @@ import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import RegisterSuccessView from '@/views/RegisterSuccessView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -27,8 +28,30 @@ const router = createRouter({
       path: '/register-success',
       name: 'RegisterSuccess',
       component: RegisterSuccessView
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: ProfileView,
+      props: true
     }
   ]
+})
+
+const isLoggedIn = () => {
+  return localStorage.getItem('token')
+}
+
+const protectedRoutes = ['Profile']
+
+router.beforeEach(async (to, from, next) => {
+  if (to.name && protectedRoutes.includes(to.name.toString()) && !isLoggedIn()) {
+    next({
+      path: '/login'
+    })
+  } else {
+    next()
+  }
 })
 
 export default router

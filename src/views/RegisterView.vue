@@ -8,6 +8,7 @@ interface PageData {
   lastname: string
   phone: string
   password: string
+  passwordConfirm: string
 }
 
 export default defineComponent({

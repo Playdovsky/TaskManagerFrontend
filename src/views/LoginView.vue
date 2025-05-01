@@ -6,7 +6,7 @@ interface PageData {
   username: string
   password: string
   loginDataStore: ReturnType<typeof useLoginPageDataStore>
-  loginFailed: false
+  loginFailed: boolean
 }
 
 export default defineComponent({
@@ -48,12 +48,14 @@ export default defineComponent({
         })
       })
 
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem('token', data.token)
+        this.$router.push('/profile')
+      } else {
         this.loginFailed = true
         return
       }
-
-      this.$router.push('/')
     }
   },
   mounted() {
