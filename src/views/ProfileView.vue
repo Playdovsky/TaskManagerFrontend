@@ -80,6 +80,33 @@ export default defineComponent({
       } else {
         console.log('Wystąpił błąd podczas przesyłania żądania:', response.status)
       }
+    },
+    async deleteAccount() {
+      const confirmDelete = confirm(
+        'Czy na pewno chcesz usunąć konto? Efekt ten jest nieodwracalny.'
+      )
+
+      if (!confirmDelete) {
+        return
+      }
+
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/DeleteAccount/deleteAccount', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        console.log('Konto zostało usunięte')
+        localStorage.removeItem('token')
+        localStorage.removeItem('username')
+        this.$router.push('/login')
+      } else {
+        console.log('Wystąpił błąd podczas przesyłania żądania:', response.status)
+      }
     }
   },
   mounted() {
@@ -122,6 +149,14 @@ export default defineComponent({
         <RouterLink class="btn btn-dark" to="/change-password" style="margin-right: 1%">
           Zmień hasło
         </RouterLink>
+        <button
+          type="button"
+          class="btn btn-danger"
+          style="margin-right: 1%"
+          @click="deleteAccount"
+        >
+          Usuń konto
+        </button>
       </div>
     </form>
   </div>
