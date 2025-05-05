@@ -3,6 +3,7 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import RegisterSuccessView from '@/views/RegisterSuccessView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import ChangePassword from '@/views/ChangePasswordView.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -34,6 +35,11 @@ const router = createRouter({
       name: 'Profile',
       component: ProfileView,
       props: true
+    },
+    {
+      path: '/change-password',
+      name: 'ChangePassword',
+      component: ChangePassword
     }
   ]
 })
@@ -42,7 +48,7 @@ const isLoggedIn = () => {
   return localStorage.getItem('token')
 }
 
-const protectedRoutes = ['Profile']
+const protectedRoutes = ['Profile', 'RegisterSuccess']
 
 router.beforeEach(async (to, from, next) => {
   if (to.name && protectedRoutes.includes(to.name.toString()) && !isLoggedIn()) {

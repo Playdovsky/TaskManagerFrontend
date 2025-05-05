@@ -9,6 +9,7 @@ interface ProfileData {
   lastname: string
   phone: string
   editSuccess: boolean
+  editFailed: boolean
 }
 
 export default defineComponent({
@@ -20,7 +21,8 @@ export default defineComponent({
       firstname: '',
       lastname: '',
       phone: '',
-      editSuccess: false
+      editSuccess: false,
+      editFailed: false
     }
   },
   methods: {
@@ -54,9 +56,8 @@ export default defineComponent({
         console.error('Wystąpił błąd:', error)
       }
     },
-    async putPageData() {
+    async putProfileData() {
       const token = localStorage.getItem('token')
-
       const response = await fetch('/api/EditProfile/editProfile', {
         method: 'PUT',
         headers: {
@@ -92,7 +93,7 @@ export default defineComponent({
     <form
       class="w-100 card shadow-lg border-0"
       style="max-width: 500px; padding: 2%"
-      @submit.prevent="putPageData"
+      @submit.prevent="putProfileData"
     >
       <h3>Witaj {{ username }}</h3>
       <div class="mb-3">
@@ -112,7 +113,16 @@ export default defineComponent({
         <input type="text" class="form-control" id="phone" v-model="phone" />
       </div>
       <p v-if="editSuccess" class="alert alert-success" role="alert">Zmiany zostały zapisane!</p>
-      <button type="submit" class="btn btn-success">Zapisz zmiany</button>
+      <p v-if="editFailed" class="alert alert-danger" role="alert">Błędne dane</p>
+
+      <div class="mb-3">
+        <button type="submit" class="btn btn-success" style="margin-right: 1%">
+          Zapisz zmiany
+        </button>
+        <RouterLink class="btn btn-dark" to="/change-password" style="margin-right: 1%">
+          Zmień hasło
+        </RouterLink>
+      </div>
     </form>
   </div>
 </template>

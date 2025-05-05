@@ -53,6 +53,7 @@ export default defineComponent({
         let auth = useAuthStore()
         const data = await response.json()
         auth.login(data.token)
+        localStorage.setItem('username', this.username)
         this.$router.push('/profile')
       } else {
         this.loginFailed = true
