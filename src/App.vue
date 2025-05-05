@@ -20,7 +20,7 @@ const auth = useAuthStore()
           </li>
           <li class="nav-item">
             <RouterLink class="nav-link" to="/profile" v-if="auth.isAuthenticated"
-              >Profil użytkownika</RouterLink
+              >Twój profil</RouterLink
             >
           </li>
           <li class="nav-item">

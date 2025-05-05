@@ -76,7 +76,7 @@ export default defineComponent({
   <div class="d-flex justify-content-center align-items-center mt-5">
     <form
       class="w-100 card shadow-lg border-0"
-      style="max-width: 500px; padding: 2rem"
+      style="max-width: 500px; padding: 2%"
       @submit.prevent="postPageData"
     >
       <div class="mb-3">

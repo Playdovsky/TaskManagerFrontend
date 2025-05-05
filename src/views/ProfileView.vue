@@ -8,6 +8,7 @@ interface ProfileData {
   firstname: string
   lastname: string
   phone: string
+  editSuccess: boolean
 }
 
 export default defineComponent({
@@ -18,17 +19,13 @@ export default defineComponent({
       email: '',
       firstname: '',
       lastname: '',
-      phone: ''
+      phone: '',
+      editSuccess: false
     }
   },
   methods: {
     async getProfileData() {
       const token = localStorage.getItem('token')
-
-      if (!token) {
-        console.log('Brak tokenu w localStorage')
-        return
-      }
 
       console.log(`Bearer ${token}`)
 
@@ -56,6 +53,32 @@ export default defineComponent({
       } catch (error) {
         console.error('Wystąpił błąd:', error)
       }
+    },
+    async putPageData() {
+      const token = localStorage.getItem('token')
+
+      const response = await fetch('/api/EditProfile/editProfile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: this.id,
+          username: this.username,
+          email: this.email,
+          firstname: this.firstname,
+          lastname: this.lastname,
+          phone: this.phone
+        })
+      })
+
+      if (response.ok) {
+        this.editSuccess = true
+        console.log('Dane zostały zaktualizowane')
+      } else {
+        console.log('Wystąpił błąd podczas przesyłania żądania:', response.status)
+      }
     }
   },
   mounted() {
@@ -65,17 +88,31 @@ export default defineComponent({
 </script>
 <style></style>
 <template>
-  <div class="container">
-    <h3>Profil użytkownika</h3>
-    <div v-if="username">
-      <p><strong>Username:</strong> {{ username }}</p>
-      <p><strong>Email:</strong> {{ email }}</p>
-      <p v-if="firstname"><strong>First Name:</strong> {{ firstname }}</p>
-      <p v-if="lastname"><strong>Last Name:</strong> {{ lastname }}</p>
-      <p v-if="phone"><strong>Phone:</strong> {{ phone }}</p>
-    </div>
-    <div v-else>
-      <p>Ładowanie profilu użytkownika...</p>
-    </div>
+  <div class="d-flex justify-content-center align-items-center mt-5">
+    <form
+      class="w-100 card shadow-lg border-0"
+      style="max-width: 500px; padding: 2%"
+      @submit.prevent="putPageData"
+    >
+      <h3>Witaj {{ username }}</h3>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" v-model="email" required />
+      </div>
+      <div class="mb-3">
+        <label for="firstname" class="form-label">Imię</label>
+        <input type="text" class="form-control" id="firstname" v-model="firstname" />
+      </div>
+      <div class="mb-3">
+        <label for="lastname" class="form-label">Nazwisko</label>
+        <input type="text" class="form-control" id="lastname" v-model="lastname" />
+      </div>
+      <div class="mb-3">
+        <label for="phone" class="form-label">Telefon</label>
+        <input type="text" class="form-control" id="phone" v-model="phone" />
+      </div>
+      <p v-if="editSuccess" class="alert alert-success" role="alert">Zmiany zostały zapisane!</p>
+      <button type="submit" class="btn btn-success">Zapisz zmiany</button>
+    </form>
   </div>
 </template>
