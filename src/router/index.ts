@@ -48,7 +48,7 @@ const isLoggedIn = () => {
   return localStorage.getItem('token')
 }
 
-const protectedRoutes = ['Profile', 'RegisterSuccess']
+const protectedRoutes = ['Profile']
 
 router.beforeEach(async (to, from, next) => {
   if (to.name && protectedRoutes.includes(to.name.toString()) && !isLoggedIn()) {
