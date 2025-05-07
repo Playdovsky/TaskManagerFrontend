@@ -10,6 +10,7 @@ interface ProfileData {
   phone: string
   editSuccess: boolean
   editFailed: boolean
+  errorPhone: boolean
 }
 
 export default defineComponent({
@@ -22,7 +23,8 @@ export default defineComponent({
       lastname: '',
       phone: '',
       editSuccess: false,
-      editFailed: false
+      editFailed: false,
+      errorPhone: false
     }
   },
   methods: {
@@ -57,6 +59,11 @@ export default defineComponent({
       }
     },
     async putProfileData() {
+      this.errorPhone = this.phoneValidation()
+      if (this.errorPhone) {
+        return
+      }
+
       const token = localStorage.getItem('token')
       const response = await fetch('/api/EditProfile/editProfile', {
         method: 'PUT',
@@ -107,6 +114,14 @@ export default defineComponent({
       } else {
         console.log('Wystąpił błąd podczas przesyłania żądania:', response.status)
       }
+    },
+    phoneValidation() {
+      var phonePattern = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{3})$/
+      if (this.phone.match(phonePattern) || this.phone === '') {
+        return false
+      } else {
+        return true
+      }
     }
   },
   mounted() {
@@ -122,7 +137,7 @@ export default defineComponent({
       style="max-width: 500px; padding: 2%"
       @submit.prevent="putProfileData"
     >
-      <h3>Witaj {{ username }}</h3>
+      <h3 class="text-primary">Witaj {{ username }}</h3>
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
         <input type="email" class="form-control" id="email" v-model="email" required />
@@ -140,21 +155,17 @@ export default defineComponent({
         <input type="text" class="form-control" id="phone" v-model="phone" />
       </div>
       <p v-if="editSuccess" class="alert alert-success" role="alert">Zmiany zostały zapisane!</p>
+      <p class="alert alert-danger" role="alert" v-if="errorPhone">Błędny numer telefonu</p>
       <p v-if="editFailed" class="alert alert-danger" role="alert">Błędne dane</p>
 
       <div class="mb-3">
         <button type="submit" class="btn btn-success" style="margin-right: 1%">
           Zapisz zmiany
         </button>
-        <RouterLink class="btn btn-dark" to="/change-password" style="margin-right: 1%">
+        <RouterLink class="btn btn-danger" to="/change-password" style="margin-right: 1%">
           Zmień hasło
         </RouterLink>
-        <button
-          type="button"
-          class="btn btn-danger"
-          style="margin-right: 1%"
-          @click="deleteAccount"
-        >
+        <button type="button" class="btn btn-dark" style="margin-right: 1%" @click="deleteAccount">
           Usuń konto
         </button>
       </div>

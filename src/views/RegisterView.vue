@@ -9,6 +9,8 @@ interface PageData {
   phone: string
   password: string
   passwordConfirm: string
+  errorPhone: boolean
+  errorRegister: boolean
 }
 
 export default defineComponent({
@@ -20,11 +22,18 @@ export default defineComponent({
       lastname: '',
       phone: '',
       password: '',
-      passwordConfirm: ''
+      passwordConfirm: '',
+      errorPhone: false,
+      errorRegister: false
     }
   },
   methods: {
     async postPageData() {
+      this.errorPhone = this.phoneValidation()
+      if (this.errorPhone) {
+        return
+      }
+
       const response = await fetch('/api/Register/register', {
         method: 'POST',
         headers: {
@@ -44,6 +53,15 @@ export default defineComponent({
         this.$router.push('/register-success')
       } else {
         console.log('Wystąpił błąd podczas przesyłania żądania')
+        this.errorRegister = true
+      }
+    },
+    phoneValidation() {
+      var phonePattern = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{3})$/
+      if (this.phone.match(phonePattern) || this.phone === '') {
+        return false
+      } else {
+        return true
       }
     }
   },
@@ -107,6 +125,10 @@ export default defineComponent({
           >Pola oznaczone * są obowiązkowe</small
         >
       </div>
+      <p class="alert alert-danger" role="alert" v-if="errorPhone">Błędny numer telefonu</p>
+      <p v-if="errorRegister" class="alert alert-danger" role="alert">
+        Błędne dane bądź użytkownik o takiej nazwie już istnieje
+      </p>
       <p v-if="passwordMismatch" class="alert alert-danger" role="alert">Hasła nie są takie same</p>
       <div class="d-flex justify-content-end">
         <button type="submit" class="btn btn-primary w-100" :disabled="passwordMismatch">

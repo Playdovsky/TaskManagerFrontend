@@ -6,12 +6,10 @@ export default defineComponent({})
 <style></style>
 <template>
   <div class="container px-4 py-5">
-    <div class="container px-4 py-5">
-      <h2 class="pb-2 border-bottom">Dlaczego Task Manager?</h2>
-    </div>
+    <div class="container px-4 py-5"></div>
     <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
       <div class="col d-flex flex-column align-items-start gap-2">
-        <h2 class="fw-bold text-body-emphasis">Uporządkuj swoje życie razem z nami!</h2>
+        <h2 class="fw-bold text-primary">Uporządkuj swoje życie razem z nami!</h2>
         <p class="text-body-secondary">
           Task Manager to aplikacja, która pomoże Ci w organizacji codziennych zadań. Dzięki
           intuicyjnemu interfejsowi i zaawansowanym funkcjom zarządzania zadaniami, będziesz mógł
@@ -21,12 +19,12 @@ export default defineComponent({})
       <div class="col">
         <div class="row row-cols-1 row-cols-sm-2 g-4">
           <div class="col d-flex flex-column gap-2">
-            <h4 class="fw-semibold mb-0 text-body-emphasis">
+            <h4 class="fw-semibold mb-0 text-primary">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="36"
                 height="36"
-                fill="currentColor"
+                fill="currentColor "
                 class="bi bi-journal-bookmark-fill"
                 viewBox="0 0 16 16"
               >
@@ -49,7 +47,7 @@ export default defineComponent({})
             </p>
           </div>
           <div class="col d-flex flex-column gap-2">
-            <h4 class="fw-semibold mb-0 text-body-emphasis">
+            <h4 class="fw-semibold mb-0 text-primary">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="36"
@@ -70,7 +68,7 @@ export default defineComponent({})
             </p>
           </div>
           <div class="col d-flex flex-column gap-2">
-            <h4 class="fw-semibold mb-0 text-body-emphasis">
+            <h4 class="fw-semibold mb-0 text-primary">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="36"
@@ -91,7 +89,7 @@ export default defineComponent({})
             </p>
           </div>
           <div class="col d-flex flex-column gap-2">
-            <h4 class="fw-semibold mb-0 text-body-emphasis">
+            <h4 class="fw-semibold mb-0 text-primary">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="36"
