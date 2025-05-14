@@ -28,6 +28,12 @@ const auth = useAuthStore()
               Wyloguj się
             </RouterLink>
           </li>
+          <li class="nav-item">
+          <RouterLink class="nav-link" v-if="auth.isAuthenticated" to="/tasks">
+          Zadania
+          </RouterLink>
+          </li>
+
         </ul>
       </nav>
     </div>

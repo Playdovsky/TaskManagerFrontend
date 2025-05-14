@@ -4,6 +4,7 @@ import RegisterView from '@/views/RegisterView.vue'
 import RegisterSuccessView from '@/views/RegisterSuccessView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ChangePassword from '@/views/ChangePasswordView.vue'
+import TaskManagerView from '@/views/TaskManagerView.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -40,7 +41,12 @@ const router = createRouter({
       path: '/change-password',
       name: 'ChangePassword',
       component: ChangePassword
-    }
+    },
+    {
+    path: '/tasks',
+    name: 'Tasks',
+    component: TaskManagerView
+  }
   ]
 })
 
