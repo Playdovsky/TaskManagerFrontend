@@ -12,40 +12,155 @@ export interface List {
 
 export const useListStore = defineStore('list', {
   state: () => ({
-    lists: [] as List[]
+    lists: [] as List[],
+    isLoading: false,
+    error: null as string | null
   }),
+  
   actions: {
     async fetchLists() {
-      const response = await fetch('/api/tasklist/all')
-      if (response.ok) {
-        this.lists = await response.json()
-      } else {
-        console.error('Nie udało się pobrać list zadań')
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return
+      }
+
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch('/api/tasklist/all', {
+          headers: {
+            'Authorization': `Bearer ${authStore.token}`
+          }
+        })
+        
+        if (response.ok) {
+          this.lists = await response.json()
+          console.log('Pobrano listy zadań:', this.lists.length)
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się pobrać list zadań:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+        }
+      } catch (error) {
+        console.error('Błąd podczas pobierania list zadań:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+      } finally {
+        this.isLoading = false
       }
     },
-async addList(title: string) {
-  const authStore = useAuthStore()
 
-  if (!authStore.token) {
-    console.error('Brak tokena — użytkownik nie jest zalogowany')
-    return
-  }
-
-  const response = await fetch('/api/tasklist/add', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+    async addList(title: string) {
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return false
+      }
      
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch('/api/tasklist/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authStore.token}`
+          },
+          body: JSON.stringify({ title })
+        })
+       
+        if (response.ok) {
+          await this.fetchLists()
+          return true
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się dodać listy zadań:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+          return false
+        }
+      } catch (error) {
+        console.error('Błąd podczas dodawania listy zadań:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+        return false
+      } finally {
+        this.isLoading = false
+      }
     },
-    body: JSON.stringify({ title })
-  })
 
-  if (response.ok) {
-    await this.fetchLists()
-  } else {
-    console.error('Nie udało się dodać listy zadań')
-  }
-}
+    async editList(id: number, title: string) {
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return false
+      }
 
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch('/api/tasklist/edit', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authStore.token}`
+          },
+          body: JSON.stringify({ id, title })
+        })
+        
+        if (response.ok) {
+          await this.fetchLists()
+          return true
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się edytować listy zadań:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+          return false
+        }
+      } catch (error) {
+        console.error('Błąd podczas edytowania listy zadań:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteList(id: number) {
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return false
+      }
+
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch(`/api/tasklist/delete/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authStore.token}`
+          }
+        })
+        
+        if (response.ok) {
+          await this.fetchLists()
+          return true
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się usunąć listy zadań:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+          return false
+        }
+      } catch (error) {
+        console.error('Błąd podczas usuwania listy zadań:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    }
   }
 })
