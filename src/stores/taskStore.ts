@@ -11,6 +11,7 @@ export interface Task {
   isDone: boolean
   createdDate?: string
   modifiedDate?: string
+  isActive: boolean
 }
 
 export interface Status {
@@ -166,39 +167,36 @@ export const useTaskStore = defineStore('task', {
         console.error('Błąd podczas usuwania zadania:', error)
       }
     },
+    
+    async updateTask(task: Task) {
+  const authStore = useAuthStore()
+  if (!authStore.token) {
+    console.error('Brak tokena — użytkownik nie jest zalogowany')
+    return
+  }
 
-    async toggleTaskCompletion(task: Task) {
-      const authStore = useAuthStore()
-      if (!authStore.token) {
-        console.error('Brak tokena — użytkownik nie jest zalogowany')
-        return
+  try {
+    const response = await fetch(`/api/task/edit`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify(task)
+    })
+    
+    if (response.ok) {
+      // Aktualizujemy zadanie w tablicy
+      const index = this.tasks.findIndex(t => t.id === task.id)
+      if (index !== -1) {
+        this.tasks[index] = task
       }
-
-      try {
-        const updatedTask = { ...task, isDone: !task.isDone }
-        
-        // Zaktualizowana ścieżka API, aby używać endpoint edit zamiast update
-        const response = await fetch(`/api/task/edit`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authStore.token}`
-          },
-          body: JSON.stringify(updatedTask)
-        })
-        
-        if (response.ok) {
-          // Aktualizujemy zadanie w tablicy
-          const index = this.tasks.findIndex(t => t.id === task.id)
-          if (index !== -1) {
-            this.tasks[index] = updatedTask
-          }
-        } else {
-          console.error('Nie udało się zaktualizować zadania:', await response.text())
-        }
-      } catch (error) {
-        console.error('Błąd podczas aktualizacji zadania:', error)
-      }
+    } else {
+      console.error('Nie udało się zaktualizować zadania:', await response.text())
     }
+  } catch (error) {
+    console.error('Błąd podczas aktualizacji zadania:', error)
+  }
+}
   }
 })
