@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useAuthStore } from './authStore'
+import { useListStore } from './listStore'
 
 export interface Task {
   id: number
@@ -51,6 +52,9 @@ export const useTaskStore = defineStore('task', {
           // Aktualizujemy lub dodajemy nowe zadania, zachowując istniejące dla innych list
           const existingTasksForOtherLists = this.tasks.filter(t => t.taskListId !== listId)
           this.tasks = [...existingTasksForOtherLists, ...data]
+          
+          // Po pobraniu zadań, sprawdź czy wszystkie są ukończone
+          this.checkListCompletion(listId)
         } else {
           console.error(`Nie udało się pobrać zadań dla listy ID ${listId}:`, await response.text())
         }
@@ -149,6 +153,8 @@ export const useTaskStore = defineStore('task', {
         return
       }
 
+      const listId = task.taskListId
+
       try {
         const response = await fetch(`/api/task/delete/${id}`, {
           method: 'DELETE',
@@ -159,7 +165,9 @@ export const useTaskStore = defineStore('task', {
         
         if (response.ok) {
           // Po usunięciu odświeżamy listę zadań
-          await this.fetchTasks(task.taskListId)
+          await this.fetchTasks(listId)
+          // Sprawdź czy wszystkie pozostałe zadania są ukończone
+          this.checkListCompletion(listId)
         } else {
           console.error('Nie udało się usunąć zadania:', await response.text())
         }
@@ -168,7 +176,7 @@ export const useTaskStore = defineStore('task', {
       }
     },
     
-    async updateTask(task: Task) {
+async updateTask(task: Task) {
   const authStore = useAuthStore()
   if (!authStore.token) {
     console.error('Brak tokena — użytkownik nie jest zalogowany')
@@ -176,6 +184,8 @@ export const useTaskStore = defineStore('task', {
   }
 
   try {
+    console.log('Aktualizacja zadania:', task) // Dodaj logowanie dla debugowania
+    
     const response = await fetch(`/api/task/edit`, {
       method: 'PUT',
       headers: {
@@ -186,17 +196,40 @@ export const useTaskStore = defineStore('task', {
     })
     
     if (response.ok) {
-      // Aktualizujemy zadanie w tablicy
+      // Zastąp obiekt w tablicy tasks pełnym obiektem z odpowiedzi serwera
+      const updatedTask = await response.json()
       const index = this.tasks.findIndex(t => t.id === task.id)
       if (index !== -1) {
-        this.tasks[index] = task
+        this.tasks[index] = updatedTask
+      } else {
+        console.error('Nie znaleziono zadania o ID:', task.id)
       }
+      
+      // Sprawdź czy wszystkie zadania na liście są ukończone
+      this.checkListCompletion(task.taskListId)
     } else {
       console.error('Nie udało się zaktualizować zadania:', await response.text())
     }
   } catch (error) {
     console.error('Błąd podczas aktualizacji zadania:', error)
   }
-}
+},
+
+    // Nowa funkcja sprawdzająca czy wszystkie zadania na liście są ukończone
+    async checkListCompletion(listId: number) {
+      const tasksInList = this.tasks.filter(t => t.taskListId === listId)
+      
+      // Jeśli nie ma zadań na liście, nie rób nic
+      if (tasksInList.length === 0) return
+      
+      // Sprawdź czy wszystkie zadania są oznaczone jako ukończone
+      const allTasksCompleted = tasksInList.every(task => task.isDone === true)
+      
+      if (allTasksCompleted) {
+        // Jeśli wszystkie zadania są ukończone, zmień status listy
+        const listStore = useListStore()
+        await listStore.markListAsCompleted(listId)
+      }
+    }
   }
 })

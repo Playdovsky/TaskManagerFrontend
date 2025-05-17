@@ -161,6 +161,46 @@ export const useListStore = defineStore('list', {
       } finally {
         this.isLoading = false
       }
+    },
+
+    // funkcja do oznaczania listy jako ukończonej
+    async markListAsCompleted(id: number) {
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return false
+      }
+
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch('/api/tasklist/complete', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authStore.token}`
+          },
+          body: JSON.stringify({ id })
+        })
+        
+        if (response.ok) {
+          // Po pomyślnym zakończeniu odświeżamy listę
+          await this.fetchLists()
+          return true
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się oznaczyć listy jako ukończonej:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+          return false
+        }
+      } catch (error) {
+        console.error('Błąd podczas oznaczania listy jako ukończonej:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+        return false
+      } finally {
+        this.isLoading = false
+      }
     }
   }
 })
