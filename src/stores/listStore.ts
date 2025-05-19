@@ -13,6 +13,7 @@ export interface List {
 export const useListStore = defineStore('list', {
   state: () => ({
     lists: [] as List[],
+    archivedLists: [] as List[], // Added for archived lists
     isLoading: false,
     error: null as string | null
   }),
@@ -45,6 +46,40 @@ export const useListStore = defineStore('list', {
         }
       } catch (error) {
         console.error('Błąd podczas pobierania list zadań:', error)
+        this.error = error instanceof Error ? error.message : 'Nieznany błąd'
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // Nowa metoda do pobierania zarchiwizowanych list
+    async fetchArchivedLists() {
+      const authStore = useAuthStore()
+      if (!authStore.token) {
+        console.error('Brak tokena — użytkownik nie jest zalogowany')
+        return
+      }
+
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const response = await fetch('/api/tasklist/archived', {
+          headers: {
+            'Authorization': `Bearer ${authStore.token}`
+          }
+        })
+        
+        if (response.ok) {
+          this.archivedLists = await response.json()
+          console.log('Pobrano zarchiwizowane listy zadań:', this.archivedLists.length)
+        } else {
+          const errorText = await response.text()
+          console.error('Nie udało się pobrać zarchiwizowanych list zadań:', errorText)
+          this.error = `Błąd: ${response.status} - ${errorText}`
+        }
+      } catch (error) {
+        console.error('Błąd podczas pobierania zarchiwizowanych list zadań:', error)
         this.error = error instanceof Error ? error.message : 'Nieznany błąd'
       } finally {
         this.isLoading = false
@@ -187,6 +222,8 @@ export const useListStore = defineStore('list', {
         if (response.ok) {
           // Po pomyślnym zakończeniu odświeżamy listę
           await this.fetchLists()
+          // Również odświeżamy listę zarchiwizowanych zadań
+          await this.fetchArchivedLists()
           return true
         } else {
           const errorText = await response.text()

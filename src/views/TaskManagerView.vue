@@ -2,13 +2,13 @@
   <div class="container mt-4">
     <h2>Zarządzanie zadaniami</h2>
 
-    <!-- Dodaj listę zadań -->
+    <!-- dodawanie listy zadan -->
     <form @submit.prevent="confirmAddList" class="mb-3">
       <input v-model="newListName" class="form-control mb-2" placeholder="Nazwa nowej listy" />
       <button class="btn btn-secondary">Dodaj listę</button>
     </form>
 
-    <!-- Lista rozwijana dla każdej aktywnej listy zadań -->
+    <!-- lista rozwijana dla kazdej listy zadan -->
     <div v-for="list in activeLists" :key="list.id" class="mb-4 border p-3 rounded">
       <div class="d-flex justify-content-between align-items-center">
         <button class="btn btn-link" @click="toggleList(list.id)">
@@ -18,7 +18,7 @@
             <span v-else>▼</span>
           </h4>
         </button>
-        <!-- Nowe przyciski do edycji/usunięcia listy -->
+        <!-- przyciski do edycji/usunięcia listy -->
         <div>
           <button class="btn btn-sm btn-primary me-2" @click="startEditList(list)">
             Edytuj
@@ -30,7 +30,7 @@
       </div>
 
       <div v-if="expandedLists.includes(list.id)">
-        <!-- Zadania przypisane do listy -->
+        <!-- zadania przypisane do listy -->
         <ul class="list-group mb-2">
           <li v-for="task in tasksForList(list.id)" :key="task.id" class="list-group-item d-flex justify-content-between align-items-center">
             <div>
@@ -51,18 +51,18 @@
           </li>
         </ul>
 
-        <!-- Formularz dodania zadania -->
+        <!-- formularz dodawania zadania -->
         <form @submit.prevent="addTaskToList(list.id)">
           <input v-model="newTaskTitle" class="form-control mb-2" placeholder="Tytuł zadania" />
           <textarea v-model="newTaskDescription" class="form-control mb-2" placeholder="Opis"></textarea>
           
-          <!-- Status -->
+          <!-- statusy -->
           <select v-model="newTaskStatusId" class="form-control mb-2">
             <option disabled value="">Wybierz status</option>
             <option v-for="s in statuses" :value="s.id" :key="s.id">{{ s.name }}</option>
           </select>
 
-          <!-- Priorytet -->
+          <!-- priorytety -->
           <select v-model="newTaskPriorityId" class="form-control mb-2">
             <option disabled value="">Wybierz priorytet</option>
             <option v-for="p in priorities" :value="p.id" :key="p.id">{{ p.name }}</option>
@@ -111,7 +111,7 @@
       </div>
     </div>
     
-    <!-- Potwierdzenie ukończenia ostatniego zadania -->
+    <!-- okienko do potwierdzenia ukonczenia ostatniego zadania z listy -->
     <div class="modal fade" ref="lastTaskModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -131,7 +131,7 @@
       </div>
     </div>
 
-    <!-- Edycja listy zadań -->
+    <!-- edycja nazwy listy zadan -->
     <div class="modal fade" ref="editListModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -155,7 +155,7 @@
       </div>
     </div>
 
-    <!-- Potwierdzenie usunięcia listy -->
+    <!-- potwierdzenie usuniecia listy zadan -->
     <div class="modal fade" ref="deleteListModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -182,7 +182,6 @@ import { defineComponent, ref, onMounted, computed } from 'vue'
 import { useTaskStore } from '@/stores/taskStore'
 import { useListStore } from '@/stores/listStore'
 
-// Import z bootstrap
 import { Modal } from 'bootstrap'
 
 export default defineComponent({
@@ -190,7 +189,7 @@ export default defineComponent({
     const taskStore = useTaskStore()
     const listStore = useListStore()
 
-    // Zmienne do formularza
+    // zmienne do formularza
     const newTaskTitle = ref('')
     const newTaskDescription = ref('')
     const newTaskStatusId = ref<number | string>('')
@@ -198,35 +197,33 @@ export default defineComponent({
     const newListName = ref('')
     const expandedLists = ref<number[]>([])
     
-    // Zmienne dla modali
+    // zmienne dla modali bootstrap
     const deleteTaskModal = ref<HTMLElement | null>(null)
     const addListModal = ref<HTMLElement | null>(null)
     const lastTaskModal = ref<HTMLElement | null>(null)
-    const editListModal = ref<HTMLElement | null>(null) // ref dla modalu edycji
-    const deleteListModal = ref<HTMLElement | null>(null) // ref dla modalu usuwania listy
+    const editListModal = ref<HTMLElement | null>(null) 
+    const deleteListModal = ref<HTMLElement | null>(null) 
     
     const taskToDelete = ref<any>(null)
     const taskToComplete = ref<any>(null)
-    const listToEdit = ref<any>(null) //  zmienna dla listy do edycji
-    const listToDelete = ref<any>(null) //  zmienna dla listy do usunięcia
-    const editListName = ref('') //  zmienna dla nowej nazwy listy
+    const listToEdit = ref<any>(null) 
+    const listToDelete = ref<any>(null) 
+    const editListName = ref('') 
     
     const pendingStatusChange = ref<{ task: any; newStatusId: number } | null>(null)
     
-    // Instancje modali
+    // modale instancje
     let deleteModal: Modal | null = null
     let addModal: Modal | null = null
     let lastTaskCompletionModal: Modal | null = null
-    let editModal: Modal | null = null // instancja modalu edycji
-    let deleteListConfirmModal: Modal | null = null // instancja modalu usuwania listy
+    let editModal: Modal | null = null 
+    let deleteListConfirmModal: Modal | null = null
 
     onMounted(async () => {
-      // Pobieranie danych po załadowaniu komponentu
       await listStore.fetchLists()
       await taskStore.fetchStatuses()
       await taskStore.fetchPriorities()
       
-      // Inicjalizacja modali
       if (deleteTaskModal.value) {
         deleteModal = new Modal(deleteTaskModal.value)
       }
@@ -239,7 +236,6 @@ export default defineComponent({
         lastTaskCompletionModal = new Modal(lastTaskModal.value)
       }
 
-      // Inicjalizacja nowych modali
       if (editListModal.value) {
         editModal = new Modal(editListModal.value)
       }
@@ -249,35 +245,35 @@ export default defineComponent({
       }
     })
 
-    // Funkcja rozwijania listy
+    // rozwijanie listy funkcja
     const toggleList = async (listId: number) => {
       if (expandedLists.value.includes(listId)) {
         expandedLists.value = expandedLists.value.filter(id => id !== listId)
       } else {
         expandedLists.value.push(listId)
-        await taskStore.fetchTasks(listId) // Pobierz zadania dla tej listy
+        await taskStore.fetchTasks(listId)
       }
     }
 
-    // Pobierz zadania przypisane do listy
+    // pobieranie zadań przypisanych do listy
     const tasksForList = (listId: number) =>
       taskStore.tasks.filter(t => t.taskListId === listId)
     
-    //Inicjuje edycję listy
+    // inicjalizacja edycji listy
     const startEditList = (list: any) => {
       listToEdit.value = list
       editListName.value = list.title
       editModal?.show()
     }
 
-    // Zamyka pop up edycji listy
+    // zamkniecie okna pop up
     const closeEditListModal = () => {
       editModal?.hide()
       listToEdit.value = null
       editListName.value = ''
     }
 
-    // Obsługa zapisania zmian w liście
+    // obsluga zapisywania zmian
     const handleEditList = async () => {
       if (listToEdit.value && editListName.value.trim()) {
         const success = await listStore.editList(listToEdit.value.id, editListName.value.trim())
@@ -287,19 +283,19 @@ export default defineComponent({
       }
     }
 
-    //Inicjuje usunięcie listy
+    // inicjalizacja usuwania z listy
     const confirmDeleteList = (list: any) => {
       listToDelete.value = list
       deleteListConfirmModal?.show()
     }
 
-    // Zamyka pop up usuwania listy
+    // zamkniecie pop upu
     const closeDeleteListModal = () => {
       deleteListConfirmModal?.hide()
       listToDelete.value = null
     }
 
-    // Obsługa usunięcia listy
+    // obsluga usuwania z listy
     const deleteList = async () => {
       if (listToDelete.value) {
         const success = await listStore.deleteList(listToDelete.value.id)
@@ -335,7 +331,7 @@ export default defineComponent({
       }
     }
     
-    // zamyaknie okna pop up
+    // zamykanie okna pop up
     const closeLastTaskModal = () => {
       lastTaskCompletionModal?.hide();
       taskToComplete.value = null;
@@ -347,7 +343,7 @@ export default defineComponent({
       if (pendingStatusChange.value) {
         const { task, newStatusId } = pendingStatusChange.value;
         
-        // Aktualizacja zadania
+        // aktualizacja zadania
         const updatedTask = { 
           ...JSON.parse(JSON.stringify(task)), 
           statusId: newStatusId,
@@ -372,15 +368,15 @@ export default defineComponent({
       const selectElement = event.target as HTMLSelectElement;
       const newStatusId = Number(selectElement.value);
       
-      // Sprawdzenie czy status się zmienił
+      // sprawdzenie czy status sie zmienil
       if (task.statusId === newStatusId) return;
       
       // kopia zadania, aby uniknąć modyfikacji oryginalnego obiektu
       const updatedTask = { 
         ...JSON.parse(JSON.stringify(task)), 
         statusId: newStatusId,
-        isDone: newStatusId === 3, // Ustaw isDone na true tylko jeśli status = 3
-        isActive: newStatusId !== 3 // Jeśli status = 3 (Zakończone), oznacz zadanie jako nieaktywne
+        isDone: newStatusId === 3, 
+        isActive: newStatusId !== 3
       };
 
       console.log('Przed aktualizacją:', task);
@@ -388,11 +384,11 @@ export default defineComponent({
       
       await taskStore.updateTask(updatedTask);
       
-      // odświeżenie danych
+      // odswiezenie danych
       await taskStore.fetchTasks(task.taskListId);
     }
 
-    // Funkcja dodawania zadania do listy
+    // funkcja dodawania zadania do listy
     const addTaskToList = async (listId: number) => {
       if (!newTaskTitle.value || !newTaskStatusId.value || !newTaskPriorityId.value) return
 
@@ -408,14 +404,14 @@ export default defineComponent({
         isActive: true
       })
 
-      // Resetowanie formularza po dodaniu zadania
+      // resetowanie formularza po dodaniu zadania
       newTaskTitle.value = ''
       newTaskDescription.value = ''
       newTaskStatusId.value = ''
       newTaskPriorityId.value = ''
     }
 
-    // Funkcje dla potwierdzenia usunięcia zadania
+    
     const confirmDeleteTask = (task: any) => {
       taskToDelete.value = task
       deleteModal?.show()
@@ -433,7 +429,6 @@ export default defineComponent({
       }
     }
 
-    // Funkcje dla potwierdzenia dodania listy
     const confirmAddList = () => {
       if (!newListName.value) return
       addModal?.show()
@@ -445,7 +440,7 @@ export default defineComponent({
 
     const handleAddList = async () => {
       await listStore.addList(newListName.value)
-      newListName.value = '' // Resetowanie formularza
+      newListName.value = '' 
       closeAddListModal()
     }
 
@@ -457,10 +452,7 @@ export default defineComponent({
 
     return {
       lists: listStore.lists,
-      // Filtrowanie list - tylko aktywne
       activeLists: computed(() => listStore.lists.filter(list => list.isActive)),
-      // Filtrowanie list - tylko ukończone
-      completedLists: computed(() => listStore.lists.filter(list => list.isDone && !list.isActive)),
       statuses: taskStore.statuses,
       priorities: taskStore.priorities,
       newTaskTitle,

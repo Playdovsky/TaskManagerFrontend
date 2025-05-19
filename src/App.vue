@@ -34,10 +34,13 @@ function handleLogout() {
             </RouterLink>
           </li>
           <li class="nav-item" v-if="auth.isAuthenticated">
-            <a href="#" class="nav-link" @click.prevent="handleLogout">Wyloguj się</a>
+            <RouterLink class="nav-link" to="/tasks">Zadania</RouterLink>
           </li>
           <li class="nav-item" v-if="auth.isAuthenticated">
-            <RouterLink class="nav-link" to="/tasks">Zadania</RouterLink>
+            <RouterLink class="nav-link" to="/archive">Archiwum</RouterLink>
+          </li>
+          <li class="nav-item" v-if="auth.isAuthenticated">
+            <a href="#" class="nav-link" @click.prevent="handleLogout">Wyloguj się</a>
           </li>
         </ul>
       </nav>
