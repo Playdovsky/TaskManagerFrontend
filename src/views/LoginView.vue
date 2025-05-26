@@ -2,6 +2,7 @@
 import { useLoginPageDataStore } from '@/stores/loginFormPersistData'
 import { defineComponent } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useTaskStore } from '@/stores/taskStore'
 
 interface PageData {
   username: string
@@ -51,9 +52,15 @@ export default defineComponent({
 
       if (response.ok) {
         let auth = useAuthStore()
+        const taskStore = useTaskStore()
         const data = await response.json()
-        auth.login(data.token)
+        auth.login(data.token, data.userId, data.username)
         localStorage.setItem('username', this.username)
+        
+        await Promise.all([
+      taskStore.fetchStatuses(),
+      taskStore.fetchPriorities()
+    ])
         this.$router.push('/profile')
       } else {
         this.loginFailed = true

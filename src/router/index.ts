@@ -4,7 +4,8 @@ import RegisterView from '@/views/RegisterView.vue'
 import RegisterSuccessView from '@/views/RegisterSuccessView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ChangePassword from '@/views/ChangePasswordView.vue'
-
+import TaskManagerView from '@/views/TaskManagerView.vue'
+import ArchivedTasksView from '@/views/ArchivedTasksView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -40,6 +41,16 @@ const router = createRouter({
       path: '/change-password',
       name: 'ChangePassword',
       component: ChangePassword
+    },
+    {
+      path: '/tasks',
+      name: 'Tasks',
+      component: TaskManagerView
+    },
+    {
+      path: '/archive',
+      name: 'Archive',
+      component: ArchivedTasksView
     }
   ]
 })
@@ -48,7 +59,7 @@ const isLoggedIn = () => {
   return localStorage.getItem('token')
 }
 
-const protectedRoutes = ['Profile']
+const protectedRoutes = ['Profile', 'Tasks', 'Archive']
 
 router.beforeEach(async (to, from, next) => {
   if (to.name && protectedRoutes.includes(to.name.toString()) && !isLoggedIn()) {
