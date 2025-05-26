@@ -4,8 +4,21 @@
 
     <!-- dodawanie listy zadan -->
     <form @submit.prevent="confirmAddList" class="mb-3">
-      <input v-model="newListName" class="form-control mb-2" placeholder="Nazwa nowej listy" />
-      <button class="btn btn-secondary">Dodaj listę</button>
+      <div class="position-relative">
+        <input 
+          v-model="newListName" 
+          class="form-control mb-2" 
+          placeholder="Nazwa nowej listy" 
+          maxlength="30"
+          :class="{ 'is-invalid': newListName.length > 30 }"
+        />
+        <small class="text-muted position-absolute" style="right: 10px; bottom: 8px; font-size: 0.8rem;">
+          {{ newListName.length }}/30
+        </small>
+      </div>
+      <button class="btn btn-secondary" :disabled="!newListName.trim() || newListName.length > 30">
+        Dodaj listę
+      </button>
     </form>
 
     <!-- lista rozwijana dla kazdej listy zadan -->
@@ -53,8 +66,32 @@
 
         <!-- formularz dodawania zadania -->
         <form @submit.prevent="addTaskToList(list.id)">
-          <input v-model="newTaskTitle" class="form-control mb-2" placeholder="Tytuł zadania" />
-          <textarea v-model="newTaskDescription" class="form-control mb-2" placeholder="Opis"></textarea>
+          <div class="position-relative mb-2">
+            <input 
+              v-model="newTaskTitle" 
+              class="form-control" 
+              placeholder="Tytuł zadania" 
+              maxlength="30"
+              :class="{ 'is-invalid': newTaskTitle.length > 30 }"
+            />
+            <small class="text-muted position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem;">
+              {{ newTaskTitle.length }}/30
+            </small>
+          </div>
+          
+          <div class="position-relative mb-2">
+            <textarea 
+              v-model="newTaskDescription" 
+              class="form-control" 
+              placeholder="Opis" 
+              rows="3"
+              maxlength="255"
+              :class="{ 'is-invalid': newTaskDescription.length > 255 }"
+            ></textarea>
+            <small class="text-muted position-absolute" style="right: 10px; bottom: 8px; font-size: 0.8rem;">
+              {{ newTaskDescription.length }}/255
+            </small>
+          </div>
           
           <!-- statusy -->
           <select v-model="newTaskStatusId" class="form-control mb-2">
@@ -68,7 +105,12 @@
             <option v-for="p in priorities" :value="p.id" :key="p.id">{{ p.name }}</option>
           </select>
 
-          <button class="btn btn-primary">Dodaj zadanie</button>
+          <button 
+            class="btn btn-primary" 
+            :disabled="!isTaskFormValid"
+          >
+            Dodaj zadanie
+          </button>
         </form>
       </div>
     </div>
@@ -105,7 +147,14 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeAddListModal">Anuluj</button>
-            <button type="button" class="btn btn-primary" @click="handleAddList">Dodaj</button>
+            <button 
+              type="button" 
+              class="btn btn-primary" 
+              @click="handleAddList"
+              :disabled="!newListName.trim() || newListName.length > 30"
+            >
+              Dodaj
+            </button>
           </div>
         </div>
       </div>
@@ -141,15 +190,33 @@
           </div>
           <div class="modal-body">
             <form @submit.prevent="handleEditList">
-              <div class="mb-3">
+              <div class="mb-3 position-relative">
                 <label for="editListName" class="form-label">Nazwa listy</label>
-                <input type="text" class="form-control" id="editListName" v-model="editListName" required>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="editListName" 
+                  v-model="editListName" 
+                  maxlength="30"
+                  :class="{ 'is-invalid': editListName.length > 30 }"
+                  required
+                >
+                <small class="text-muted position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem;">
+                  {{ editListName.length }}/30
+                </small>
               </div>
             </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeEditListModal">Anuluj</button>
-            <button type="button" class="btn btn-primary" @click="handleEditList">Zapisz zmiany</button>
+            <button 
+              type="button" 
+              class="btn btn-primary" 
+              @click="handleEditList"
+              :disabled="!editListName.trim() || editListName.length > 30"
+            >
+              Zapisz zmiany
+            </button>
           </div>
         </div>
       </div>
@@ -219,6 +286,15 @@ export default defineComponent({
     let editModal: Modal | null = null 
     let deleteListConfirmModal: Modal | null = null
 
+    // computed property dla walidacji formularza zadania
+    const isTaskFormValid = computed(() => {
+      return newTaskTitle.value.trim() && 
+             newTaskTitle.value.length <= 30 &&
+             newTaskDescription.value.length <= 255 &&
+             newTaskStatusId.value !== '' && 
+             newTaskPriorityId.value !== ''
+    })
+
     onMounted(async () => {
       await listStore.fetchLists()
       await taskStore.fetchStatuses()
@@ -275,7 +351,7 @@ export default defineComponent({
 
     // obsluga zapisywania zmian
     const handleEditList = async () => {
-      if (listToEdit.value && editListName.value.trim()) {
+      if (listToEdit.value && editListName.value.trim() && editListName.value.length <= 30) {
         const success = await listStore.editList(listToEdit.value.id, editListName.value.trim())
         if (success) {
           closeEditListModal()
@@ -305,18 +381,17 @@ export default defineComponent({
       }
     }
 
-    // Funkcja sprawdzająca, czy to ostatnie zadanie do ukończenia w liście
+    // sprawdza czy to ostatnie zadanie do ukończenia w liście
     const checkLastTaskCompletion = (task: any, event: Event) => {
       const selectElement = event.target as HTMLSelectElement;
       const newStatusId = Number(selectElement.value);
       
-      // Jeśli zmiana nie jest na status "Zakończone" (id=3), przeprocesuj normalnie
       if (newStatusId !== 3 || task.statusId === 3) {
         changeTaskStatus(task, event);
         return;
       }
       
-      // Sprawdzenie, czy to ostatnie nieukończone zadanie na liście
+      // Sprawdzenie czy to ostatnie nieukończone zadanie na liście
       const tasksInList = tasksForList(task.taskListId);
       const uncompletedTasks = tasksInList.filter(t => !t.isDone && t.id !== task.id);
       
@@ -326,7 +401,7 @@ export default defineComponent({
         pendingStatusChange.value = { task, newStatusId };
         lastTaskCompletionModal?.show();
       } else {
-        // Nie jest to ostatnie zadanie, obsłuż normalnie
+        // Nie jest to ostatnie zadanie obsłuż normalnie
         changeTaskStatus(task, event);
       }
     }
@@ -390,13 +465,13 @@ export default defineComponent({
 
     // funkcja dodawania zadania do listy
     const addTaskToList = async (listId: number) => {
-      if (!newTaskTitle.value || !newTaskStatusId.value || !newTaskPriorityId.value) return
+      if (!isTaskFormValid.value) return
 
       const statusIdValue = Number(newTaskStatusId.value)
 
       await taskStore.addTask({
-        title: newTaskTitle.value,
-        description: newTaskDescription.value,
+        title: newTaskTitle.value.trim(),
+        description: newTaskDescription.value.trim(),
         taskListId: listId,
         statusId: statusIdValue,
         priorityId: Number(newTaskPriorityId.value),
@@ -430,7 +505,7 @@ export default defineComponent({
     }
 
     const confirmAddList = () => {
-      if (!newListName.value) return
+      if (!newListName.value.trim() || newListName.value.length > 30) return
       addModal?.show()
     }
 
@@ -439,9 +514,11 @@ export default defineComponent({
     }
 
     const handleAddList = async () => {
-      await listStore.addList(newListName.value)
-      newListName.value = '' 
-      closeAddListModal()
+      if (newListName.value.trim() && newListName.value.length <= 30) {
+        await listStore.addList(newListName.value.trim())
+        newListName.value = '' 
+        closeAddListModal()
+      }
     }
 
     const getStatusName = (id: number) =>
@@ -471,6 +548,7 @@ export default defineComponent({
       listToEdit,
       listToDelete,
       editListName,
+      isTaskFormValid,
       toggleList,
       addTaskToList,
       tasksForList,

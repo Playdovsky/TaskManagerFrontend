@@ -19,12 +19,10 @@ export const useAuthStore = defineStore('auth', {
       this.userId = userId
       this.username = username
       
-      // Zapisanie w localStorage
       localStorage.setItem('token', token)
       localStorage.setItem('userId', userId.toString())
       localStorage.setItem('username', username)
       
-      // Wczytanie list zadań po zalogowaniu
       const listStore = useListStore()
       await listStore.fetchLists()
     },
@@ -42,13 +40,12 @@ export const useAuthStore = defineStore('auth', {
 },
     
         async initialize() {
-      // Pobranie danych z localStorage
+      // pobranie danych 
       this.token = localStorage.getItem('token') || null
       const storedUserId = localStorage.getItem('userId')
       this.userId = storedUserId && !isNaN(parseInt(storedUserId)) ? parseInt(storedUserId) : null
       this.username = localStorage.getItem('username') || null
       
-      // Jeśli użytkownik jest zalogowany, pobierz listy zadań
       if (this.isAuthenticated && this.userId !== null) {
         const listStore = useListStore()
         await listStore.fetchLists()
