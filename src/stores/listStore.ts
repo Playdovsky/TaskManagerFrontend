@@ -13,7 +13,7 @@ export interface List {
 export const useListStore = defineStore('list', {
   state: () => ({
     lists: [] as List[],
-    archivedLists: [] as List[], // Added for archived lists
+    archivedLists: [] as List[], 
     isLoading: false,
     error: null as string | null
   }),
@@ -52,7 +52,6 @@ export const useListStore = defineStore('list', {
       }
     },
 
-    // Nowa metoda do pobierania zarchiwizowanych list
     async fetchArchivedLists() {
       const authStore = useAuthStore()
       if (!authStore.token) {
@@ -220,9 +219,7 @@ export const useListStore = defineStore('list', {
         })
         
         if (response.ok) {
-          // Po pomyślnym zakończeniu odświeżamy listę
           await this.fetchLists()
-          // Również odświeżamy listę zarchiwizowanych zadań
           await this.fetchArchivedLists()
           return true
         } else {

@@ -40,7 +40,6 @@ export const useTaskStore = defineStore('task', {
       }
 
       try {
-        // Zaktualizowana ścieżka API, aby dopasować endpoint w kontrolerze
         const response = await fetch(`/api/task/all/${listId}`, {
           headers: {
             'Authorization': `Bearer ${authStore.token}`
@@ -49,11 +48,9 @@ export const useTaskStore = defineStore('task', {
         
         if (response.ok) {
           const data = await response.json()
-          // Aktualizujemy lub dodajemy nowe zadania, zachowując istniejące dla innych list
           const existingTasksForOtherLists = this.tasks.filter(t => t.taskListId !== listId)
           this.tasks = [...existingTasksForOtherLists, ...data]
           
-          // Po pobraniu zadań, sprawdź czy wszystkie są ukończone
           this.checkListCompletion(listId)
         } else {
           console.error(`Nie udało się pobrać zadań dla listy ID ${listId}:`, await response.text())
@@ -129,7 +126,6 @@ export const useTaskStore = defineStore('task', {
         })
         
         if (response.ok) {
-          // Po dodaniu odświeżamy listę zadań dla tej listy
           await this.fetchTasks(task.taskListId)
         } else {
           console.error('Nie udało się dodać zadania:', await response.text())
@@ -146,7 +142,7 @@ export const useTaskStore = defineStore('task', {
         return
       }
 
-      // Znajdź task aby zapamiętać jego listId do późniejszego odświeżenia
+      
       const task = this.tasks.find(t => t.id === id)
       if (!task) {
         console.error('Nie znaleziono zadania o ID:', id)
@@ -164,9 +160,7 @@ export const useTaskStore = defineStore('task', {
         })
         
         if (response.ok) {
-          // Po usunięciu odświeżamy listę zadań
           await this.fetchTasks(listId)
-          // Sprawdź czy wszystkie pozostałe zadania są ukończone
           this.checkListCompletion(listId)
         } else {
           console.error('Nie udało się usunąć zadania:', await response.text())
@@ -184,7 +178,7 @@ async updateTask(task: Task) {
   }
 
   try {
-    console.log('Aktualizacja zadania:', task) // Dodaj logowanie dla debugowania
+    console.log('Aktualizacja zadania:', task) 
     
     const response = await fetch(`/api/task/edit`, {
       method: 'PUT',
@@ -196,7 +190,6 @@ async updateTask(task: Task) {
     })
     
     if (response.ok) {
-      // Zastąp obiekt w tablicy tasks pełnym obiektem z odpowiedzi serwera
       const updatedTask = await response.json()
       const index = this.tasks.findIndex(t => t.id === task.id)
       if (index !== -1) {
@@ -205,7 +198,6 @@ async updateTask(task: Task) {
         console.error('Nie znaleziono zadania o ID:', task.id)
       }
       
-      // Sprawdź czy wszystkie zadania na liście są ukończone
       this.checkListCompletion(task.taskListId)
     } else {
       console.error('Nie udało się zaktualizować zadania:', await response.text())
@@ -215,18 +207,14 @@ async updateTask(task: Task) {
   }
 },
 
-    // Nowa funkcja sprawdzająca czy wszystkie zadania na liście są ukończone
     async checkListCompletion(listId: number) {
       const tasksInList = this.tasks.filter(t => t.taskListId === listId)
       
-      // Jeśli nie ma zadań na liście, nie rób nic
       if (tasksInList.length === 0) return
       
-      // Sprawdź czy wszystkie zadania są oznaczone jako ukończone
       const allTasksCompleted = tasksInList.every(task => task.isDone === true)
       
       if (allTasksCompleted) {
-        // Jeśli wszystkie zadania są ukończone, zmień status listy
         const listStore = useListStore()
         await listStore.markListAsCompleted(listId)
       }
